@@ -20,7 +20,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/colinhacks/zod"
+    "url": "https://github.com/patr0nus/zod"
   },
   "author": "Colin McDonnell <colin@colinhacks.com>",
   "license": "MIT",
@@ -98,5 +98,8 @@
       "eslint --cache --fix",
       "prettier --ignore-unknown --write"
     ]
+  },
+  "publishConfig": {
+    "registry":"https://npm.pkg.github.com"
   }
 }
