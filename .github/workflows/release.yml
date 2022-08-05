@@ -1,12 +1,7 @@
 # .github/release.yml
 
 name: Release on npm
-on:
-  push:
-    branches:
-      - "master"
-    paths:
-      - package.json
+on: workflow_dispatch
 
 jobs:
   build_and_publish:
