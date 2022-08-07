@@ -71,6 +71,8 @@ test("first party switch", () => {
       break;
     case z.ZodFirstPartyTypeKind.ZodPromise:
       break;
+    case z.ZodFirstPartyTypeKind.ZodClassInstance:
+      break;
     case z.ZodFirstPartyTypeKind.ZodAsyncIterable:
       break;
     default:
