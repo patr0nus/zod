@@ -3789,6 +3789,53 @@ export class ZodNaN extends ZodType<number, ZodNaNDef> {
   };
 }
 
+/////////////////////////////////////////
+/////////////////////////////////////////
+//////////                     //////////
+//////////   ZodClassInstance  //////////
+//////////                     //////////
+/////////////////////////////////////////
+/////////////////////////////////////////
+type Class = new (...args: any[]) => any;
+export interface ZodClassInstanceDef<T extends Class> extends ZodTypeDef {
+  typeName: ZodFirstPartyTypeKind.ZodClassInstance;
+  class: T;
+}
+
+export class ZodClassInstance<T extends Class> extends ZodType<
+  InstanceType<T>,
+  ZodClassInstanceDef<T>
+> {
+  get class(): T {
+    return this._def.class;
+  }
+  _parse(input: ParseInput): ParseReturnType<InstanceType<T>> {
+    if (!(input.data instanceof this.class)) {
+      const ctx = this._getOrReturnCtx(input);
+      addIssueToContext(ctx, {
+        code: ZodIssueCode.invalid_type,
+        expected: this.class.name as "string",
+        received: ctx.parsedType,
+      });
+      return INVALID;
+    }
+
+    return { status: "valid", value: input.data };
+  }
+  static create = <T extends Class>(
+    cls: T,
+    params: RawCreateParams = {
+      invalid_type_error: `Input not instance of ${cls.name}`,
+    }
+  ): ZodClassInstance<T> => {
+    return new ZodClassInstance({
+      typeName: ZodFirstPartyTypeKind.ZodClassInstance,
+      class: cls,
+      ...processCreateParams(params),
+    });
+  };
+}
+
 export const custom = <T>(
   check?: (data: unknown) => any,
   params: Parameters<ZodTypeAny["refine"]>[1] = {},
@@ -3843,6 +3890,7 @@ export enum ZodFirstPartyTypeKind {
   ZodNullable = "ZodNullable",
   ZodDefault = "ZodDefault",
   ZodPromise = "ZodPromise",
+  ZodClassInstance = "ZodClassInstance",
   ZodAsyncIterable = "ZodAsyncIterable",
 }
 export type ZodFirstPartySchemaTypes =
@@ -3879,13 +3927,7 @@ export type ZodFirstPartySchemaTypes =
   | ZodPromise<any>
   | ZodAsyncIterable<any>;
 
-const instanceOfType = <T extends new (...args: any[]) => any>(
-  cls: T,
-  params: Parameters<ZodTypeAny["refine"]>[1] = {
-    message: `Input not instance of ${cls.name}`,
-  }
-) => custom<InstanceType<T>>((data) => data instanceof cls, params, true);
-
+const instanceOfType = ZodClassInstance.create;
 const stringType = ZodString.create;
 const numberType = ZodNumber.create;
 const nanType = ZodNaN.create;
